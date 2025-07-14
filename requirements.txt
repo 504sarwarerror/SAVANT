@@ -1,0 +1,6 @@
+requests
+chromadb
+tqdm
+jsonlines
+numpy
+prompt_toolkit
