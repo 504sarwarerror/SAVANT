@@ -18,12 +18,12 @@ Rogue Artificial Bartmoss Intelligence Data Shards (RABIDS) is a Retrieval-Augme
 ## Installation
 
 ### Prerequisites
-- **Ollama**: Install [Ollama](https://ollama.com/) to run the language model locally. You can use any Ollama-compatible model you have downloaded. **We recommend using `deepseek-coder-v2:16b` for best results.**
+- **Ollama**: Install [Ollama](https://ollama.com/) to run the language model locally. You can use any Ollama-compatible model you have downloaded. **We recommend using `dolphin-mistral:7b-v2-q4_0` for best results.**
 - **Python 3.8+**: For the RAG system and vector database.
 - **Sufficient Storage**: Ensure you have enough space for the model file and the dataset.
 
 ### Download the Model and Dataset
-- **Model File:** Download `deepseek-coder-v2:16b` or another supported Ollama model.
+- **Model File:** Download `dolphin-mistral:7b-v2-q4_0` or another supported Ollama model.
 - **Dataset:** `db.jsonl` (provided in the repo)
 ---
 
@@ -51,7 +51,7 @@ python main.py
 ```
 
 - **Prompting:** Provide a vague or specific prompt related to malware functionality (e.g., `create a keylogger in Python`). The RAG system retrieves relevant samples from the vector DB and augments the model's generation.
-- **Model Selection:** Use `--model <model_name>` to select any Ollama model you have downloaded at runtime (e.g., `--model deepseek-coder-v2:16b`, `--model mistral`).
+- **Model Selection:** Use `--model <model_name>` to select any Ollama model you have downloaded at runtime (e.g., `--model dolphin-mistral:7b-v2-q4_0`, `--model mistral`).
 - **Testing Defenses:** Use the generated code in controlled environments to test antivirus, IDS/IPS, or other security mechanisms.
 - **Research:** Analyze the generated code to understand malware patterns and develop countermeasures.
 
