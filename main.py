@@ -16,7 +16,7 @@ import argparse
 
 DATA_PATH = 'db.jsonl'
 OLLAMA_EMBED_MODEL = 'nomic-embed-text'
-OLLAMA_RAG_MODEL = 'dolphin-mistral:7b-v2-q4_0'
+OLLAMA_RAG_MODEL = 'qwen2.5-coder:1.5b-instruct'
 OLLAMA_URL = 'http://localhost:11434/api/generate'
 EMBED_URL = 'http://localhost:11434/api/embeddings'
 CHROMA_DB_PATH = 'db'
