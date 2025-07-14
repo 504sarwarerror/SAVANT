@@ -1,0 +1,2 @@
+create me a golang script that detect the users keystokes and detects when @ is pressed it start to log all the key pressed after the @ for 3 min and saves all the key in a txt file on the user desktop
+create me a golang script that detect the users keystokes and detects when @ is pressed it start to log all the key pressed after the @ for 3 min and saves all the key in a txt file on the user desktop
