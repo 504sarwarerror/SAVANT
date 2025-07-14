@@ -1,3 +1,10 @@
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+try:
+    from urllib3.exceptions import NotOpenSSLWarning
+    warnings.filterwarnings("ignore", category=NotOpenSSLWarning)
+except ImportError:
+    pass
 import os
 import jsonlines
 import numpy as np
@@ -13,15 +20,27 @@ from prompt_toolkit import print_formatted_text, HTML
 import time
 import threading
 import argparse
+from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.key_binding import KeyBindings
 
 DATA_PATH = 'db.jsonl'
 OLLAMA_EMBED_MODEL = 'nomic-embed-text'
-OLLAMA_RAG_MODEL = 'qwen2.5-coder:1.5b-instruct'
+OLLAMA_RAG_MODEL = 'qwen2.5-coder:7b-instruct-q4_0'
 OLLAMA_URL = 'http://localhost:11434/api/generate'
 EMBED_URL = 'http://localhost:11434/api/embeddings'
 CHROMA_DB_PATH = 'db'
 COLLECTION_NAME = 'rabids'
 TOP_K = 5
+
+HISTORY_FILE = 'rabids_history.txt'
+COMMANDS = {
+    '/help': 'Show this help message',
+    '/clear': 'Clear the terminal',
+    '/history': 'Show previous queries',
+    '/reset': 'Reset the conversation/history',
+    '/config': 'Show current config',
+    '/exit': 'Exit the program',
+}
 
 def load_documents(path, max_docs=1000):
     docs = []
@@ -149,6 +168,22 @@ def loading_animation(stop_event, message="generating"):
     sys.stdout.write('\r' + ' ' * (len(message) + 2) + '\r')
     sys.stdout.flush()
 
+class PersistentHistory(InMemoryHistory):
+    def __init__(self, filename):
+        super().__init__()
+        self.filename = filename
+        if os.path.exists(self.filename):
+            with open(self.filename, 'r') as f:
+                for line in f:
+                    self.append_string(line.rstrip())
+    def save(self):
+        with open(self.filename, 'w') as f:
+            for item in self.get_strings():
+                f.write(item + '\n')
+
+from prompt_toolkit.completion import WordCompleter
+command_completer = WordCompleter(list(COMMANDS.keys()), ignore_case=True)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RABIDS CLI")
     parser.add_argument('--model', type=str, help='Ollama model to use for RAG')
@@ -171,22 +206,95 @@ if __name__ == "__main__":
         'prompt': '#ffffff',
         'placeholder': '#8A8A8A',
     })
+    history = PersistentHistory(HISTORY_FILE)
+    last_message = None
+
+    kb = KeyBindings()
+
+    @kb.add('enter')
+    def _(event):
+        event.current_buffer.validate_and_handle()
+
+    try:
+        @kb.add('c-enter')
+        def _(event):
+            event.current_buffer.insert_text('\n')
+    except Exception:
+        pass
+
+    def show_help():
+        print_system('Available commands:')
+        for cmd, desc in COMMANDS.items():
+            print_formatted_text(HTML(f'<ansicyan>{cmd}</ansicyan>: {desc}'))
+
+    def show_history():
+        print_system('Query history:')
+        for i, item in enumerate(history.get_strings()):
+            print_formatted_text(HTML(f'<ansiyellow>{i+1}:</ansiyellow> {item}'))
+
+    def show_config():
+        print_system('Current config:')
+        print_formatted_text(HTML(f'<ansicyan>Model:</ansicyan> {OLLAMA_RAG_MODEL}'))
+        print_formatted_text(HTML(f'<ansicyan>Top K:</ansicyan> {TOP_K}'))
+        print_formatted_text(HTML(f'<ansicyan>DB Path:</ansicyan> {CHROMA_DB_PATH}'))
+        print_formatted_text(HTML(f'<ansicyan>Collection:</ansicyan> {COLLECTION_NAME}'))
+
+    def clear_terminal():
+        os.system('clear' if os.name == 'posix' else 'cls')
+        print_ascii_art()
+
+    def reset_history():
+        history.strings = []
+        history.save()
+        print_success('History reset.')
+
     while True:
         try:
             query = prompt(
                 [('class:prompt', '>>> ')],
                 style=style,
                 placeholder='Send a message (/? for help)',
-                include_default_pygments_style=False
+                include_default_pygments_style=False,
+                history=history,
+                key_bindings=kb,
+                completer=command_completer,
+                complete_while_typing=True
             )
         except KeyboardInterrupt:
             break
+        if not query.strip():
+            continue
+        if query.startswith('/'):
+            cmd = query.strip().split()[0].lower()
+            if cmd == '/help':
+                show_help()
+            elif cmd == '/clear':
+                clear_terminal()
+            elif cmd == '/history':
+                show_history()
+            elif cmd == '/reset':
+                confirm = input('Are you sure you want to reset history? (y/n): ')
+                if confirm.lower() == 'y':
+                    reset_history()
+            elif cmd == '/config':
+                show_config()
+            elif cmd == '/exit':
+                break
+            else:
+                print_error(f'Unknown command: {cmd}. Type /help for a list of commands.')
+            continue
         if query.lower() == 'exit':
             break
         context = retrieve(query, collection)
         stop_event = threading.Event()
         anim_thread = threading.Thread(target=loading_animation, args=(stop_event, "generating"))
         anim_thread.start()
+        start_time = time.time()
         generate_rag(query, context, loading_stop_event=stop_event)
         stop_event.set()
         anim_thread.join()
+        elapsed = time.time() - start_time
+        print_status(f"[Done in {elapsed:.2f}s]", color='cyan')
+        print()
+        history.append_string(query)
+        history.save()
