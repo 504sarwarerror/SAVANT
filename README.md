@@ -51,7 +51,7 @@ python main.py
 ```
 
 - **Prompting:** Provide a vague or specific prompt related to malware functionality (e.g., `create a keylogger in Python`). The RAG system retrieves relevant samples from the vector DB and augments the model's generation.
-- **Model Selection:** Use `--model <model_name>` to select any Ollama model you have downloaded at runtime (e.g., `--model qwen2.5-coder:1.5b-instruct, `--model mistral`).
+- **Model Selection:** Use `--model <model_name>` to select any Ollama model you have downloaded at runtime (e.g., `--model qwen2.5-coder:1.5b-instruct`, `--model mistral`).
 - **Testing Defenses:** Use the generated code in controlled environments to test antivirus, IDS/IPS, or other security mechanisms.
 - **Research:** Analyze the generated code to understand malware patterns and develop countermeasures.
 
