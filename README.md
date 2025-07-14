@@ -65,8 +65,7 @@ The RAG system uses a dataset of 50,000 malware samples, including:
 - Ransomware
 - Other malicious code variants
 
-The dataset is open-source and available for download in the repository releases section (coming soon). Researchers can use it to further enhance the system or conduct independent studies.
-
+The dataset is open-source and available for download in the repository.
 ---
 
 ## Ethical Considerations
