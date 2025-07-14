@@ -22,6 +22,7 @@ import threading
 import argparse
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.completion import Completer, Completion
 
 DATA_PATH = 'db.jsonl'
 OLLAMA_EMBED_MODEL = 'nomic-embed-text'
@@ -181,8 +182,15 @@ class PersistentHistory(InMemoryHistory):
             for item in self.get_strings():
                 f.write(item + '\n')
 
-from prompt_toolkit.completion import WordCompleter
-command_completer = WordCompleter(list(COMMANDS.keys()), ignore_case=True)
+class CommandOnlyCompleter(Completer):
+    def get_completions(self, document, complete_event):
+        text = document.text_before_cursor
+        if text.startswith('/'):
+            for cmd in COMMANDS:
+                if cmd.startswith(text):
+                    yield Completion(cmd, start_position=-len(text))
+
+command_completer = CommandOnlyCompleter()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="RABIDS CLI")
@@ -257,7 +265,7 @@ if __name__ == "__main__":
                 include_default_pygments_style=False,
                 history=history,
                 key_bindings=kb,
-                completer=command_completer,
+                completer=CommandOnlyCompleter(),
                 complete_while_typing=True
             )
         except KeyboardInterrupt:
