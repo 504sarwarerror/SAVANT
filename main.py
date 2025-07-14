@@ -14,17 +14,15 @@ import time
 import threading
 import argparse
 
-# CONFIG
 DATA_PATH = 'db.jsonl'
-OLLAMA_EMBED_MODEL = 'nomic-embed-text'  
+OLLAMA_EMBED_MODEL = 'nomic-embed-text'
 OLLAMA_RAG_MODEL = 'dolphin-mistral:7b-v2-q4_0'
-OLLAMA_URL = 'http://localhost:11434/api/generate' 
-EMBED_URL = 'http://localhost:11434/api/embeddings' 
+OLLAMA_URL = 'http://localhost:11434/api/generate'
+EMBED_URL = 'http://localhost:11434/api/embeddings'
 CHROMA_DB_PATH = 'db'
 COLLECTION_NAME = 'rabids'
 TOP_K = 5
 
-# 1. Read documents
 def load_documents(path, max_docs=1000):
     docs = []
     with jsonlines.open(path) as reader:
@@ -37,25 +35,20 @@ def load_documents(path, max_docs=1000):
                 docs.append(str(obj))
     return docs
 
-# 2. Get embeddings from Ollama
 def get_embedding(text):
     resp = requests.post(EMBED_URL, json={"model": OLLAMA_EMBED_MODEL, "prompt": text})
     resp.raise_for_status()
     return resp.json()['embedding']
 
-# 3. Build or load ChromaDB collection
 def get_chroma_collection(docs, show_progress=False):
     client = chromadb.PersistentClient(path=CHROMA_DB_PATH, settings=Settings(allow_reset=True))
-    # Check if collection exists and has documents
     if COLLECTION_NAME in [c.name for c in client.list_collections()]:
         collection = client.get_collection(COLLECTION_NAME)
         if collection.count() > 0:
-            # No print statements here
             return collection
         else:
             client.delete_collection(COLLECTION_NAME)
     collection = client.create_collection(COLLECTION_NAME)
-    # Add documents and embeddings with optional progress bar
     iterator = tqdm(docs, desc='ChromaDB loading', unit='doc') if show_progress else docs
     for i, doc in enumerate(iterator):
         emb = get_embedding(doc)
@@ -87,7 +80,6 @@ def print_success(msg):
     print_formatted_text(HTML(f'<ansigreen>{msg}</ansigreen>'))
 
 def print_status(msg, color='green'):
-    # ANSI color codes
     colors = {
         'green': '\033[92m',
         'red': '\033[91m',
@@ -96,27 +88,22 @@ def print_status(msg, color='green'):
     }
     color_code = colors.get(color, colors['green'])
     reset_code = colors['reset']
-    # Clear the line, print the colored message, and flush
-    sys.stdout.write('\r\033[2K')  # Clear the line
-    sys.stdout.write(f'{color_code}{msg}{reset_code}')  # Write the message
+    sys.stdout.write('\r\033[2K')
+    sys.stdout.write(f'{color_code}{msg}{reset_code}')
     sys.stdout.flush()
 
 def clear_status_line():
     sys.stdout.write('\r\033[2K')
     sys.stdout.flush()
-    # Optionally, print a newline to move to the next line for the prompt
     print()
 
-# 4. RAG: Retrieve and Generate
 def retrieve(query, collection, k=TOP_K):
     q_emb = get_embedding(query)
-    # Check if embedding is valid and non-empty
     if not isinstance(q_emb, list) or len(q_emb) == 0 or (isinstance(q_emb[0], list) and len(q_emb[0]) == 0):
         return []
     try:
         results = collection.query(query_embeddings=[q_emb], n_results=k)
         docs = results['documents'][0] if results['documents'] else []
-        # No ASCII art or extra messages here
         return docs
     except Exception as e:
         return []
@@ -131,14 +118,13 @@ def generate_rag(query, context, loading_stop_event=None):
         "Use the code's functionality if it makes the generated code better.\n\n"
     )
     prompt_text = f"{system_prompt}Context:\n{chr(10).join(context)}\n\nQuestion: {query}\nAnswer:"
-    # Stream the response from Ollama
     resp = requests.post(OLLAMA_URL, json={"model": OLLAMA_RAG_MODEL, "prompt": prompt_text, "stream": True}, stream=True)
     first_chunk = True
     print("\n[Answer]: ", end="", flush=True)
     for line in resp.iter_lines():
         if line:
             if first_chunk and loading_stop_event is not None:
-                loading_stop_event.set()  # Stop the loading animation as soon as output is received
+                loading_stop_event.set()
                 first_chunk = False
             try:
                 data = line.decode('utf-8')
@@ -169,17 +155,11 @@ if __name__ == "__main__":
     parser.add_argument('--create-db', action='store_true', help='Force recreate the ChromaDB vector DB')
     parser.add_argument('--size', type=int, default=1000, help='Number of samples to use when creating the DB (default: 1000)')
     args = parser.parse_args()
-
-    # Allow model override
     if args.model:
         OLLAMA_RAG_MODEL = args.model
-
     print_ascii_art()
-
-    # DB creation logic
     docs = load_documents(DATA_PATH, max_docs=args.size)
     if args.create_db:
-        # Always recreate the DB
         import shutil
         import os
         if os.path.exists(CHROMA_DB_PATH):
@@ -187,7 +167,6 @@ if __name__ == "__main__":
         collection = get_chroma_collection(docs, show_progress=True)
     else:
         collection = get_chroma_collection(docs, show_progress=False)
-
     style = Style.from_dict({
         'prompt': '#ffffff',
         'placeholder': '#8A8A8A',
