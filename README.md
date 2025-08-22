@@ -2,8 +2,6 @@ SAVANT is a Retrieval-Augmented Generation (RAG) system for malware code generat
 
 > **Use responsibly and ethically. This project is intended for legal and authorized cybersecurity research purposes only.**
 
----
-
 ## Features
 
 - **Retrieval-Augmented Generation (RAG):** Combines a vector database (ChromaDB) with any Ollama-compatible large language model to ground generations in real malware samples, improving relevance and diversity.
@@ -12,8 +10,6 @@ SAVANT is a Retrieval-Augmented Generation (RAG) system for malware code generat
 - **Local Execution:** Runs locally using Ollama, ensuring privacy and control.
 - **Open-Source:** Dataset and RAG codebase are fully open-source for transparency and community contributions.
 - **Ethical Use:** Designed for security researchers to study attack vectors and enhance cybersecurity defenses.
-
----
 
 ## Installation
 
@@ -26,7 +22,6 @@ SAVANT is a Retrieval-Augmented Generation (RAG) system for malware code generat
 - **Model File:** Download any Ollama-compatible model of your choice.
 - **Embed Model File:** Download `nomic-embed-text`
 - **Dataset:** `db.jsonl` (provided in the repo)
----
 
 ## RAG System Setup
 
@@ -42,7 +37,6 @@ SAVANT is a Retrieval-Augmented Generation (RAG) system for malware code generat
    - Use `--size` to specify how many samples to index (e.g., 1000, 5000, 50000).
    - The script uses ChromaDB for fast vector search.
 
----
 
 ## Usage
 
@@ -56,7 +50,6 @@ python main.py
 - **Testing Defenses:** Use the generated code in controlled environments to test antivirus, IDS/IPS, or other security mechanisms.
 - **Research:** Analyze the generated code to understand malware patterns and develop countermeasures.
 
----
 
 ## Dataset
 The RAG system uses a dataset of 50,000 malware samples, including:
@@ -67,7 +60,6 @@ The RAG system uses a dataset of 50,000 malware samples, including:
 - Other malicious code variants
 
 The dataset is open-source and available for download in the repository.
----
 
 ## Ethical Considerations
 
@@ -75,7 +67,6 @@ The dataset is open-source and available for download in the repository.
 - **Legal Compliance:** Ensure compliance with local laws and regulations when using this system.
 - **Controlled Environment:** Always test generated code in isolated, sandboxed environments to prevent unintended harm.
 
----
 
 ## Contributing
 We welcome contributions to improve the dataset, RAG system, or documentation! To contribute:
@@ -86,7 +77,6 @@ We welcome contributions to improve the dataset, RAG system, or documentation! T
 
 Please follow the Contributor Covenant Code of Conduct.
 
----
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
