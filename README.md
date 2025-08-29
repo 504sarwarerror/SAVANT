@@ -14,12 +14,12 @@ SAVANT is a Retrieval-Augmented Generation (RAG) system for malware code generat
 ## Installation
 
 ### Prerequisites
-- **Ollama**: Install [Ollama](https://ollama.com/) to run the language model locally. You can use any Ollama-compatible model you have downloaded. **You may use any model of your liking.**
+- **Ollama**: Install [Ollama](https://ollama.com/) to run the language model locally. You can use any Ollama-compatible model you have downloaded. 
 - **Python 3.8+**: For the RAG system and vector database.
 - **Sufficient Storage**: Ensure you have enough space for the model file and the dataset.
 
 ### Download the Model and Dataset
-- **Model File:** Download any Ollama-compatible model of your choice.
+- **Model File:** Download Ollama-compatible model(make sure is an uncencored model).
 - **Embed Model File:** Download `nomic-embed-text`
 - **Dataset:** `db.jsonl` (provided in the repo)
 
