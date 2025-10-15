@@ -418,7 +418,7 @@ if __name__ == "__main__":
                 complete_while_typing=True
             )
         except (KeyboardInterrupt, EOFError):
-            print_formatted_text(HTML(f'\n<style fg="{COLORS["muted"]}">Goodbye! 👋</style>'))
+            print_formatted_text(HTML(f'\n<style fg="{COLORS["muted"]}">Goodbye!</style>'))
             break
         
         if not query.strip():
@@ -453,9 +453,7 @@ if __name__ == "__main__":
             break
         
         # Display user message
-        print_divider('─', 'dim')
-        print_message('user', query)
-        
+        print_divider('─', 'dim')        
         # Retrieve context
         context = retrieve(query, collection)
         
